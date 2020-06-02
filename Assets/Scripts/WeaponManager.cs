@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using UnityEngine.UI;
 
 public class WeaponManager : MonoBehaviour
 {
@@ -7,22 +9,48 @@ public class WeaponManager : MonoBehaviour
     public float picupRadius;
 
     public int weaponLayer;
+    public float swaySize;
+    public float swaySmooth;
+
+
+    public float defaultFov;
+    public float scopedFov;
+    public float fovSmooth;
+
+
 
     public Transform weaponHolder;
     public Transform playerCamera;
+    public Transform swayHolder;
+   
+                                                                                
 
-    private bool _isWaponHeld;
+    private bool _isWeaponHeld;
     private Weapon _heldWeapon;
+    public TMP_Text ammoText;
+    public Camera[] playerCams;
+    public Image crosshairImage;
+
 
     private void Update()
     {
-        if (_isWaponHeld)
+        crosshairImage.gameObject.SetActive(!_isWeaponHeld || !_heldWeapon.Scoping);
+        foreach (var cam in playerCams)
         {
+            cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, _isWeaponHeld && _heldWeapon.Scoping ? scopedFov : defaultFov, fovSmooth * Time.deltaTime);
+        }
+
+
+        if (_isWeaponHeld)
+        {
+            var mouseDelta = -new Vector2(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"));
+            swayHolder.localPosition = Vector3.Lerp(swayHolder.localPosition, Vector3.zero, swaySmooth * Time.deltaTime);
+            swayHolder.localPosition += (Vector3)mouseDelta * swaySize;
             if (Input.GetKeyDown(KeyCode.Q))
             {
                 _heldWeapon.Drop(playerCamera);
                 _heldWeapon = null;
-                _isWaponHeld = false;
+                _isWeaponHeld = false;
 
             }
         }
@@ -59,9 +87,9 @@ public class WeaponManager : MonoBehaviour
 
             });
 
-            _isWaponHeld = true;
+            _isWeaponHeld = true;
             _heldWeapon = realList[0].transform.GetComponent<Weapon>();
-            _heldWeapon.Pickup(weaponHolder);
+            _heldWeapon.Pickup(weaponHolder, playerCamera, ammoText);
             //weaponHolder
 
 
