@@ -19,11 +19,20 @@ public class Weapon : MonoBehaviour
     public float kickbackForce;
     public float resetSmooth;
     public Vector3 scopePos;
+    public int weaponOfKind;
+    public ParticleSystem muzzFlash;
+    public GameObject impactEffect;
 
     [Header("Data")]
     public int weaponGfxLayer;
     public GameObject[] weaponGfxs;
     public Collider[] gfxColliders;
+    public Transform primeHolder, secondHolder, meleeHolder;
+   
+
+
+
+
 
 
     private float _rotationTime;
@@ -37,8 +46,8 @@ public class Weapon : MonoBehaviour
     private Transform _playerCamera;
     public TMP_Text _ammoText;
     private float anyTime;
-    private Vector3 _startPosition;  //<-pole z przykladu
-    private Quaternion _startRotation; //<-pole z przykladu
+    private Vector3 _startPosition;
+    private Quaternion _startRotation;
     private float animTime;
 
     private void Start()
@@ -97,7 +106,7 @@ public class Weapon : MonoBehaviour
             _ammo--;
             _ammoText.text = _ammo + " / " + maxAmmo;
             Shoot();
-            StartCoroutine(_ammo <= 0 ? RelodCooldown() : ShoottingCooldown());
+            StartCoroutine(_ammo <= 0 ? RelodCooldown() : ShootingCooldown());
         }
 
     }
@@ -116,10 +125,11 @@ public class Weapon : MonoBehaviour
             return;
         }
 
+        muzzFlash.Play();
         rb.velocity += _playerCamera.forward * hitForce;
     }
 
-    private IEnumerator ShoottingCooldown()
+    private IEnumerator ShootingCooldown()
     {
         _shooting = true;
         yield return new WaitForSeconds(1f / shotsPerSecond);
@@ -146,7 +156,8 @@ public class Weapon : MonoBehaviour
         }
 
         Destroy(_rb);
-        transform.parent = weaponHolder;
+        //transform.parent = weaponHolder;
+        WeaponKindGrab();
         transform.localPosition = Vector3.zero;
         transform.localRotation = Quaternion.identity;
         foreach (var col in gfxColliders)
@@ -196,6 +207,25 @@ public class Weapon : MonoBehaviour
         transform.parent = null;
         _held = false;
 
+    }
+
+    public void WeaponKindGrab()
+    {
+        switch (weaponOfKind)
+
+        {
+            case 1:
+                transform.parent = primeHolder;
+                break;
+            case 2:
+                transform.parent = secondHolder;
+                break;
+            default:
+                transform.parent = meleeHolder;
+                break;
+
+
+        }
     }
 
     public bool Scoping => _scoping;
