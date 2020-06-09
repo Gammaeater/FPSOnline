@@ -3,7 +3,7 @@ using Photon.Pun;
 using System;
 using UnityEngine;
 
-public class PlayerMovement : MonoBehaviourPun
+public class PlayerMovement : MonoBehaviourPun   //IPunObservable
 {
 
     //Assingables
@@ -53,10 +53,21 @@ public class PlayerMovement : MonoBehaviourPun
     }
 
     void Start()
+
     {
-        playerScale = transform.localScale;
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
+        if (photonView.IsMine)
+        {
+            //Player is local
+            gameObject.tag = "Player";
+            //Add Rigidbody to make the player interact with rigidbody
+            Rigidbody r = gameObject.AddComponent<Rigidbody>();
+            r.isKinematic = true;
+
+
+            playerScale = transform.localScale;
+            Cursor.lockState = CursorLockMode.Locked;
+            Cursor.visible = false;
+        }
     }
 
 
@@ -338,4 +349,25 @@ public class PlayerMovement : MonoBehaviourPun
         grounded = false;
     }
 
+    //public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    //{
+    //    if (stream.IsWriting)
+    //    {
+    //        //We own this player: send the others our data
+    //        stream.SendNext(transform.position);
+    //        stream.SendNext(transform.rotation);
+    //        stream.SendNext(rb.velocity);
+    //        stream.SendNext(rb.angularVelocity);
+    //    }
+    //    else
+    //    {
+    //        //Network player, receive data
+    //        latestPos = (Vector3)stream.ReceiveNext();
+    //        latestRot = (Quaternion)stream.ReceiveNext();
+    //        velocity = (Vector3)stream.ReceiveNext();
+    //        angularVelocity = (Vector3)stream.ReceiveNext();
+
+    //        valuesReceived = true;
+    //    }
+    //}
 }
